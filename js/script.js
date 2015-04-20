@@ -1,12 +1,13 @@
-// This example shows how to use the bounding box of a leaflet view to create a
+// This example shows how to use the bounding box of a leaflet view to 
 // SODA within_box query, pulling data for the current map view from a Socrata dataset
 
   //initialize the leaflet map, set options, view, and basemap
   var map = L.map('map', {
       zoomControl: false,
+      
       scrollWheelZoom: false
     })
-    .setView([37.7833, -122.4167], 15);
+    .setView([37.76, -122.45], 14);
 
   L.tileLayer(
     'http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {
@@ -59,10 +60,10 @@
 
       //iterate over each 311 complaint, add a marker to the map
       for (var i = 0; i < data.length; i++) {
-
+        
         var marker = data[i];
         var markerItem = L.circleMarker(
-          [marker.location.latitude,marker.location.longitude], {
+          [marker.point.latitude,marker.point.longitude], {
             radius: 5,
             fillColor: "steelblue",
             color: "#000",
@@ -73,8 +74,8 @@
 
         markerItem.bindPopup(
           '<h4>' + marker.complaint_type + '</h4>' 
-          + (new Date(marker.created_date)).toDateString() 
-          + ((marker.incident_address != null) ? '<br/>' + marker.incident_address : '')
+          + (new Date(marker.opened)).toDateString() 
+          + ((marker.address != null) ? '<br/>' + marker.address : '')
         );
 
         markers.addLayer(markerItem);
@@ -87,12 +88,12 @@
     })
   }
 
-  //assemble a valid SODA API call using within_box() and created_date>{a week ago}
+  //assemble a valid SODA API call using within_box() and opened>{a week ago}
   function buildQuery(sevenDaysAgo, sodaQueryBox) {
     var query =
-      "https://data.sfgov.org/City-Infrastructure/Case-Data-from-San-Francisco-311-SF311-/vw6y-z8j6.json?$select=location,closed_date,complaint_type,street_name,created_date,status,unique_key,agency_name,due_date,descriptor,location_type,agency,incident_address&$where=created_date>'" +
-      sevenDaysAgo + "' AND within_box(location," + sodaQueryBox +
-      ")&$order=created_date desc";
+      "https://data.sfgov.org/resource/gntf-qmc7.json?$select=point,closed,opened,status,case_id,address&$where=opened>'" +
+      sevenDaysAgo + "' AND within_box(point," + sodaQueryBox +
+      ")&$order=opened desc";
 
     console.log(query);
     return query;
